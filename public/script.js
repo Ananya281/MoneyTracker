@@ -1,112 +1,143 @@
-let expenses =[]
+let expenses = [];
 let totalAmount = 0;
-const categorySelect = document.getElementById('category_select')
-const amountInput = document.getElementById('amount_input')
-const InfoInput = document.getElementById('info')
-const dateInput = document.getElementById('date_input')
-const addBtn = document.getElementById('add_btn')
-const expenseTableBody = document.getElementById('expense-table-body')
-const totalAmountCell = document.getElementById('total-amount')
 
-addBtn.addEventListener('click',function(){
-    const category=categorySelect.value;
-    const info=InfoInput.value;
-    const amount =Number(amountInput.value);
+const categorySelect = document.getElementById('category_select');
+const amountInput = document.getElementById('amount_input');
+const infoInput = document.getElementById('info');
+const dateInput = document.getElementById('date_input');
+const addBtn = document.getElementById('add_btn');
+const expenseTableBody = document.getElementById('expense-table-body');
+const totalAmountCell = document.getElementById('total-amount');
+
+addBtn.addEventListener('click', function() {
+    const category = categorySelect.value;
+    const info = infoInput.value;
+    const amount = Number(amountInput.value);
     const date = dateInput.value;
 
-    if(category ===''){
-        alert('please select a category');
+    if (category === '') {
+        alert('Please select a category.');
         return;
     }
-    if(isNaN(amount) || amount<=0){
-        alert('please enter a valid amount');
+    if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount.');
         return;
     }
-    if(info ===''){
-        alert('please enter a valid amount info');
+    if (info === '') {
+        alert('Please enter expense/income info.');
         return;
     }
-    if(date ===''){
-        alert('please select a date');
+    if (date === '') {
+        alert('Please select a date.');
         return;
     }
-    expenses.push({category,amount,info,date})
-    if(category === 'Income'){
-        totalAmount+=amount;
-    }
-    if(category === 'Expense'){
-        totalAmount-=amount;
-    }
-     totalAmountCell.textContent = totalAmount;
 
-     const newRow = expenseTableBody.insertRow();
+    const newExpense = { category, amount, info, date };
+    expenses.push(newExpense);
 
-     const categoryCell = newRow.insertCell();
-     const AmountCell = newRow.insertCell();
-     const InfoCell = newRow.insertCell();
-     const dateCell = newRow.insertCell();
-     const deleteCell = newRow.insertCell();
+    if (category === 'Income') {
+        totalAmount += amount;
+    } else if (category === 'Expense') {
+        totalAmount -= amount;
+    }
 
-     const deleteBtn = document.createElement('button');
-     deleteBtn.textContent ='Delete';
-     deleteBtn.classList.add('delete-btn');
-     deleteBtn.addEventListener('click', function(){
-        expenses.splice(expenses.indexOf(expense),1);
-        if(category === 'Income'){
-            totalAmount-=amount;
+    totalAmountCell.textContent = totalAmount.toFixed(2); // Display total amount
+
+    // Create a new row for the expense table
+    const newRow = expenseTableBody.insertRow();
+
+    // Insert cells for each column
+    const categoryCell = newRow.insertCell();
+    const amountCell = newRow.insertCell();
+    const infoCell = newRow.insertCell();
+    const dateCell = newRow.insertCell();
+    const deleteCell = newRow.insertCell();
+
+    // Populate cells with data
+    categoryCell.textContent = newExpense.category;
+    amountCell.textContent = newExpense.amount.toFixed(2);
+    infoCell.textContent = newExpense.info;
+    dateCell.textContent = newExpense.date;
+
+    // Create delete icon element
+    const deleteIcon = document.createElement('i');
+    deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-icon');
+    deleteIcon.setAttribute('data-index', expenses.length - 1); // Set index for deletion reference
+    deleteIcon.addEventListener('click', function() {
+        const index = parseInt(deleteIcon.getAttribute('data-index'));
+        const deletedExpense = expenses[index];
+        if (deletedExpense.category === 'Income') {
+            totalAmount -= deletedExpense.amount;
+        } else if (deletedExpense.category === 'Expense') {
+            totalAmount += deletedExpense.amount;
         }
-        if(category === 'Expense'){
-            totalAmount+=amount;
-        }
+        totalAmountCell.textContent = totalAmount.toFixed(2); // Update total amount display
 
-        totalAmountCell.textContent=totalAmount;
-        expenseTableBody.removeChild(newRow)
-     })
-     const expense = expenses[expenses.length-1];
-     categoryCell.textContent=expense.category;
-     AmountCell.textContent=expense.amount;
-     InfoCell.textContent=expense.info;
-     dateCell.textContent=expense.date;
-     deleteCell.appendChild(deleteBtn);
+        // Remove the row from the table
+        expenseTableBody.removeChild(newRow);
 
+        // Remove the expense from the expenses array
+        expenses.splice(index, 1);
+    });
 
+    // Append delete icon to deleteCell
+    deleteCell.appendChild(deleteIcon);
+
+    // Clear input fields after adding expense
+    categorySelect.value = '';
+    amountInput.value = '';
+    infoInput.value = '';
+    dateInput.value = '';
 });
-for(const expense of expenses){
-    if(category === 'Income'){
-        totalAmount+=amount;
+
+// Function to initialize the table with existing expenses
+function initializeTable() {
+    // Clear existing rows
+    while (expenseTableBody.firstChild) {
+        expenseTableBody.removeChild(expenseTableBody.firstChild);
     }
-    if(category === 'Expense'){
-        totalAmount-=amount;
-    }
-     totalAmountCell.textContent = totalAmount;
 
-     const newRow = expenseTableBody.insertRow();
-
-     const categoryCell = newRow.insertCell();
-     const AmountCell = newRow.insertCell();
-     const InfoCell = newRow.insertCell();
-     const dateCell = newRow.insertCell();
-     const deleteCell = newRow.insertCell();
-
-     const deleteBtn = document.createElement('button');
-     deleteBtn.textContent ='Delete';
-     deleteBtn.classList.add('delete-btn');
-     deleteBtn.addEventListener('click', function(){
-        expenses.splice(expenses.indexOf(expense),1);
-        if(category === 'Income'){
-            totalAmount-=amount;
-        } 
-        if(category === 'Expense'){
-            totalAmount+=amount;
+    expenses.forEach((expense, index) => {
+        // Skip adding example row with 'Groceries'
+        if (expense.info === 'Groceries') {
+            return;
         }
 
-        totalAmountCell.textContent=totalAmount;
-        expenseTableBody.removeChild(new Row)
-     })
-     const expense = expenses[expenses.length-1];
-     categoryCell.textContent=expense.category;
-     AmountCell.textContent=expense.amount;
-     InfoCell.textContent=expense.info;
-     dateCell.textContent=expense.date;
-     deleteCell.appendChild(deleteBtn);
+        const newRow = expenseTableBody.insertRow();
+
+        const categoryCell = newRow.insertCell();
+        const amountCell = newRow.insertCell();
+        const infoCell = newRow.insertCell();
+        const dateCell = newRow.insertCell();
+        const deleteCell = newRow.insertCell();
+
+        categoryCell.textContent = expense.category;
+        amountCell.textContent = expense.amount.toFixed(2);
+        infoCell.textContent = expense.info;
+        dateCell.textContent = expense.date;
+
+        const deleteIcon = document.createElement('i');
+        deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-icon');
+        deleteIcon.setAttribute('data-index', index);
+        deleteIcon.addEventListener('click', function() {
+            const index = parseInt(deleteIcon.getAttribute('data-index'));
+            const deletedExpense = expenses[index];
+            if (deletedExpense.category === 'Income') {
+                totalAmount -= deletedExpense.amount;
+            } else if (deletedExpense.category === 'Expense') {
+                totalAmount += deletedExpense.amount;
+            }
+            totalAmountCell.textContent = totalAmount.toFixed(2);
+
+            expenseTableBody.removeChild(newRow);
+            expenses.splice(index, 1);
+        });
+
+        deleteCell.appendChild(deleteIcon);
+    });
+
+    totalAmountCell.textContent = totalAmount.toFixed(2);
 }
+
+// Call initializeTable to populate existing expenses on page load
+initializeTable();
