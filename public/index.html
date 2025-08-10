@@ -3,61 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Money Tracker App</title>
-
-  <!-- Icons + Styles -->
+  <title>Money Tracker Dashboard</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
   <link href="style.css" rel="stylesheet" />
 </head>
 <body>
   <header class="topbar">
     <h1>Money Tracker</h1>
-    <div id="auth-area">
-      <!-- Shown when logged out -->
-      <form id="auth-form" class="auth-form">
-        <input id="email" type="email" placeholder="Email" required />
-        <input id="password" type="password" placeholder="Password" required />
-        <button id="btn-login" type="submit">Login</button>
-        <button id="btn-signup" type="button" class="secondary">Sign up</button>
-      </form>
-
-      <!-- Shown when logged in -->
-      <div id="user-bar" class="hidden">
-        <span id="user-email"></span>
-        <button id="btn-logout" class="secondary">Logout</button>
-      </div>
+    <div id="user-bar">
+      <span id="user-email"></span>
+    <button id="btn-logout" class="secondary">Logout</button>
     </div>
   </header>
 
-  <main class="container hidden" id="app">
+  <main class="container" id="app">
     <section class="card">
       <h2>Add Entry</h2>
-
-      <!-- no action (handled by JS) -->
       <form id="entry-form" class="input-section">
-        <label>
-          Type
+        <label>Type
           <select id="category_select" required>
             <option value="Expense">Expense</option>
             <option value="Income">Income</option>
           </select>
         </label>
-
-        <label>
-          Amount
+        <label>Amount
           <input type="number" id="amount_input" min="0" step="0.01" required />
         </label>
-
-        <label>
-          Info
+        <label>Info
           <input type="text" id="info" maxlength="60" placeholder="e.g. Groceries" required />
         </label>
-
-        <label>
-          Date
+        <label>Date
           <input type="date" id="date_input" required />
         </label>
-
         <button id="add_btn" type="submit"><i class="fas fa-plus"></i> Add</button>
       </form>
     </section>
@@ -71,7 +48,6 @@
           <div class="net"><span class="label">Net:</span> <span id="total-net">₹0</span></div>
         </div>
       </div>
-
       <div class="table-wrap">
         <table>
           <thead>
@@ -88,8 +64,6 @@
       </div>
     </section>
   </main>
-
-
   <script type="module" src="script.js"></script>
 </body>
 </html>

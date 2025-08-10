@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Money Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Money Tracker</h2>
+
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+
+    <button id="signup-btn" class="secondary">Sign Up</button>
+
+    <div class="divider">OR</div>
+
+    <button id="btn-google" class="google-btn">
+      <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" />
+      Continue with Google
+    </button>
+  </div>
+
+  <script type="module" src="auth.js"></script>
+</body>
+</html>
