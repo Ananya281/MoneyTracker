@@ -33,7 +33,7 @@
           <input type="text" id="name" placeholder="Your Name" required />
         </label>
         <label>
-          Your E‑mail
+          Your E-mail
           <input type="email" id="email" placeholder="you@example.com" required />
         </label>
         <label>
@@ -73,12 +73,8 @@
     </aside>
   </main>
 
-  <script>
-    // Hook form submit (no backend here)
-    document.getElementById('signup-form').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      alert('Signed up! (wire to your backend auth)');
-    });
-  </script>
+  <!-- Load Firebase app first, then auth handlers -->
+  <script type="module" src="db.js"></script>
+  <script type="module" src="auth.js"></script>
 </body>
 </html>

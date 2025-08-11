@@ -1,9 +1,6 @@
-// auth.js (standalone for login + signup)
-
-// Firebase SDKs (keep same minor version you're using)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+// auth.js — login + signup (uses the shared app from db.js)
+import { auth } from "./db.js";
 import {
-  getAuth,
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
@@ -11,22 +8,10 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  onAuthStateChanged
+  onAuthStateChanged,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// === Your Firebase config ===
-const firebaseConfig = {
-  apiKey: "AIzaSyAFVHLv9lWa69One_nrqxhhkN6qx4elku4",
-  authDomain: "money-tracker-daea2.firebaseapp.com",
-  projectId: "money-tracker-daea2",
-  storageBucket: "money-tracker-daea2.appspot.com",
-  messagingSenderId: "1082584224577",
-  appId: "1:1082584224577:web:4f6f7ebaa648d73b9b87c0",
-  measurementId: "G-WZGRY77CJQ"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 // ---------- helpers ----------
@@ -42,7 +27,7 @@ function showError(targetForm, msg) {
     el.style.fontSize = ".9rem";
     targetForm.appendChild(el);
   }
-  el.textContent = msg.replace("Firebase:", "").trim();
+  el.textContent = (msg || "").replace("Firebase:", "").trim();
 }
 function setLoading(btn, loading) {
   if (!btn) return;
@@ -50,7 +35,7 @@ function setLoading(btn, loading) {
   btn.style.opacity = loading ? "0.7" : "1";
 }
 
-// ---------- LOGIN PAGE ----------
+// ---------- LOGIN ----------
 const loginForm = $("#login-form");
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
@@ -73,43 +58,44 @@ if (loginForm) {
   });
 }
 
-// Google on login/signup
-["#btn-google"].forEach((sel) => {
-  const btn = $(sel);
-  if (btn) {
-    btn.addEventListener("click", async () => {
-      // Persist login across tabs/sessions by default
-      try {
-        setLoading(btn, true);
-        await setPersistence(auth, browserLocalPersistence);
-        await signInWithPopup(auth, provider);
-        window.location.href = "index.html";
-      } catch (err) {
-        const form = loginForm || $("#signup-form");
-        showError(form, err.message);
-      } finally {
-        setLoading(btn, false);
-      }
-    });
-  }
-});
+// ---------- GOOGLE (login or signup) ----------
+const googleBtn = $("#btn-google");
+if (googleBtn) {
+  googleBtn.addEventListener("click", async () => {
+    try {
+      setLoading(googleBtn, true);
+      await setPersistence(auth, browserLocalPersistence);
+      await signInWithPopup(auth, provider);
+      window.location.href = "index.html";
+    } catch (err) {
+      const form = loginForm || $("#signup-form");
+      showError(form, err.message);
+    } finally {
+      setLoading(googleBtn, false);
+    }
+  });
+}
 
-// ---------- SIGNUP PAGE ----------
+// ---------- SIGNUP ----------
 const signupForm = $("#signup-form");
 if (signupForm) {
   signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name  = $("#name")?.value.trim();            // optional, store later in profile/DB
+    const name  = $("#name")?.value.trim();
     const email = $("#email")?.value.trim();
     const pass  = $("#password")?.value;
 
     const submitBtn = signupForm.querySelector("button[type=submit]");
     try {
       setLoading(submitBtn, true);
-      // Keep new signups logged in across sessions
       await setPersistence(auth, browserLocalPersistence);
       await createUserWithEmailAndPassword(auth, email, pass);
-      // TODO: you can update profile with displayName if needed via updateProfile(auth.currentUser, { displayName: name })
+
+      // optional: save display name
+      if (name) {
+        try { await updateProfile(auth.currentUser, { displayName: name }); } catch {}
+      }
+
       window.location.href = "index.html";
     } catch (err) {
       showError(signupForm, err.message);
@@ -119,14 +105,11 @@ if (signupForm) {
   });
 }
 
-// ---------- Auth guard / redirect ----------
+// ---------- Auth redirect guard ----------
 onAuthStateChanged(auth, (user) => {
-  const page = location.pathname.split("/").pop() || "index.html";
+  const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const isAuthPage = page === "login.html" || page === "signup.html";
-  if (user && isAuthPage) {
-    // already logged in → go to app
-    window.location.replace("index.html");
-  }
-  // If you want to protect the dashboard:
+  if (user && isAuthPage) window.location.replace("index.html");
+  // If you also want to protect the dashboard:
   // if (!user && page === "index.html") window.location.replace("login.html");
 });

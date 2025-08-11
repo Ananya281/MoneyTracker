@@ -1,130 +1,157 @@
-// -------------------- Firebase SDK --------------------
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, collection, addDoc, serverTimestamp,
-  Timestamp, onSnapshot, query, orderBy, deleteDoc, doc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// script.js — Dashboard UI only (uses db.js + data.js)
+import { auth } from "./db.js";
+import { addTransaction, listenTransactions, removeTransaction } from "./data.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// -------------------- Firebase config --------------------
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAFVHLv9lWa69One_nrqxhhkN6qx4elku4",
-  authDomain: "money-tracker-daea2.firebaseapp.com",
-  projectId: "money-tracker-daea2",
-  storageBucket: "money-tracker-daea2.firebasestorage.app",
-  messagingSenderId: "1082584224577",
-  appId: "1:1082584224577:web:4f6f7ebaa648d73b9b87c0",
-  measurementId: "G-WZGRY77CJQ"
-};
+// ---------- DOM ----------
+const $ = (s) => document.querySelector(s);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const loginGuardRedirect = "login.html";
 
-// -------------------- LOGIN --------------------
-const loginForm = document.getElementById("login-form");
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const pass = document.getElementById("password").value.trim();
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      window.location.href = "index.html";
-    } catch (err) {
-      alert(err.message);
-    }
+const form        = $("#entry-form");
+const selType     = $("#category_select");
+const inputAmount = $("#amount_input");
+const inputInfo   = $("#info");
+const inputDate   = $("#date_input");
+
+const tbody       = $("#expense-table-body");
+const incomeEl    = $("#total-income");
+const expenseEl   = $("#total-expense");
+const netEl       = $("#total-net");
+const emailEl     = $("#user-email");
+const logoutBtn   = $("#btn-logout");
+
+// INR formatter
+const fmtINR = (n) =>
+  Number(n || 0).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
+
+// ---------- Auth guard + start stream ----------
+let unsubscribe = null;
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) return location.replace(loginGuardRedirect);
+
+  if (emailEl) emailEl.textContent = user.email || "";
+
+  // start Firestore stream for this user
+  unsubscribe?.();
+  unsubscribe = listenTransactions((rows) => {
+    renderTable(rows);
+    renderTotals(rows);
+  }, (err) => {
+    console.error(err);
+    alert("Failed to load entries.");
   });
-}
+});
 
-// -------------------- SIGNUP --------------------
-const signupForm = document.getElementById("signup-form");
-if (signupForm) {
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const pass = document.getElementById("password").value.trim();
-    try {
-      await createUserWithEmailAndPassword(auth, email, pass);
-      window.location.href = "index.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
+// ---------- Logout ----------
+logoutBtn?.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    location.replace(loginGuardRedirect);
+  } catch (err) {
+    alert(err.message || "Logout failed");
+  }
+});
 
-// -------------------- LOGOUT --------------------
-const logoutBtn = document.getElementById("btn-logout");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      window.location.href = "login.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
+// ---------- Add entry ----------
+form?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) return location.replace(loginGuardRedirect);
 
-// -------------------- ADD ENTRY --------------------
-const entryForm = document.getElementById("entry-form");
-if (entryForm) {
-  entryForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const type = document.getElementById("category_select").value;
-    const amount = Number(document.getElementById("amount_input").value);
-    const info = document.getElementById("info").value.trim();
-    const date = document.getElementById("date_input").value;
-    const user = auth.currentUser;
-    if (!user) return alert("Please log in first.");
-    try {
-      await addDoc(collection(db, "users", user.uid, "transactions"), {
-        type,
-        amount,
-        info,
-        date: Timestamp.fromDate(new Date(date)),
-        createdAt: serverTimestamp()
-      });
-      entryForm.reset();
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
+  const category = selType.value; // "Expense" | "Income"
+  const amount   = Number(inputAmount.value);
+  const note     = inputInfo.value.trim();
+  const dStr     = inputDate.value;
+  const date     = dStr ? new Date(`${dStr}T00:00:00`) : new Date();
 
-// -------------------- FETCH ENTRIES --------------------
-const tbody = document.getElementById("expense-table-body");
-function renderTable(items) {
+  if (!amount || amount <= 0) {
+    inputAmount.focus();
+    return;
+  }
+
+  try {
+    // NOTE: data.js will handle +/- sign based on category
+    await addTransaction({ amount, category, note, date });
+    form.reset();
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Failed to add entry.");
+  }
+});
+
+// ---------- Render helpers ----------
+function renderTable(rows) {
   if (!tbody) return;
   tbody.innerHTML = "";
-  items.forEach(row => {
+
+  if (!rows.length) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${row.type}</td>
-      <td>${row.amount.toFixed(2)}</td>
-      <td>${row.info}</td>
-      <td>${row.date.toDate().toISOString().slice(0,10)}</td>
-      <td><i class="fas fa-trash-alt" data-id="${row.id}"></i></td>
-    `;
+    const td = document.createElement("td");
+    td.colSpan = 5;
+    td.style.textAlign = "center";
+    td.textContent = "No entries yet. Add your first one!";
+    tr.appendChild(td);
     tbody.appendChild(tr);
-  });
+    return;
+  }
+
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+
+    // Type
+    const tdType = document.createElement("td");
+    // Prefer r.category if present, else infer from amount
+    tdType.textContent = r.category || (Number(r.amount) >= 0 ? "Income" : "Expense");
+    tr.appendChild(tdType);
+
+    // Amount
+    const tdAmt = document.createElement("td");
+    tdAmt.textContent = fmtINR(Number(r.amount || 0));
+    tr.appendChild(tdAmt);
+
+    // Info
+    const tdInfo = document.createElement("td");
+    tdInfo.textContent = r.note || r.info || "";
+    tr.appendChild(tdInfo);
+
+    // Date
+    const tdDate = document.createElement("td");
+    const d = r.date?.toDate ? r.date.toDate() : new Date(r.date);
+    tdDate.textContent = d.toLocaleDateString("en-IN");
+    tr.appendChild(tdDate);
+
+    // Delete
+    const tdDel = document.createElement("td");
+    const del = document.createElement("i");
+    del.className = "fas fa-trash-alt delete-icon";
+    del.style.cursor = "pointer";
+    del.title = "Delete";
+    del.addEventListener("click", () => handleDelete(r.id));
+    tdDel.appendChild(del);
+    tr.appendChild(tdDel);
+
+    tbody.appendChild(tr);
+  }
 }
 
-if (tbody) {
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      const q = query(
-        collection(db, "users", user.uid, "transactions"),
-        orderBy("date", "desc")
-      );
-      onSnapshot(q, snap => {
-        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderTable(data);
-      });
-    }
-  });
+function renderTotals(rows) {
+  const income  = rows.filter(r => Number(r.amount) > 0).reduce((a,b)=>a+Number(b.amount), 0);
+  const expense = rows.filter(r => Number(r.amount) < 0).reduce((a,b)=>a+Number(b.amount), 0);
+  const net     = income + expense;
+
+  if (incomeEl)  incomeEl.textContent  = fmtINR(income);
+  if (expenseEl) expenseEl.textContent = fmtINR(Math.abs(expense));
+  if (netEl)     netEl.textContent     = fmtINR(net);
+}
+
+async function handleDelete(id) {
+  if (!confirm("Delete this entry?")) return;
+  try {
+    await removeTransaction(id);
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Delete failed.");
+  }
 }
