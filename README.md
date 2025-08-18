@@ -29,18 +29,39 @@ Track your expenses and income with a clean, modern, and responsive interface. S
 
 ---
 
-## 🧑‍💻 How to Run Locally
+## 🚀 How to Run and Deploy
 
-1.  **Clone the repository:**
+This project is deployed using Firebase Hosting. To run and deploy it, follow these steps.
+
+### Prerequisites
+
+1.  **Node.js and npm:** Make sure you have Node.js installed.
+2.  **Firebase CLI:** Install the Firebase command-line tools globally using npm:
+    ```bash
+    npm install -g firebase-tools
+    ```
+3.  **Firebase Project:** Create a new project in the Firebase Console.
+
+### Steps
+
+1.  **Clone the Repository**
+    Open your terminal or command prompt and clone the project:
     ```bash
     git clone [https://github.com/Ananya281/MoneyTracker.git](https://github.com/Ananya281/MoneyTracker.git)
     ```
-2.  **Navigate to the project directory:**
+
+2.  **Login to Firebase**
+    Log in to your Firebase account through the CLI:
     ```bash
-    cd money-tracker
+    firebase login
     ```
-3.  **Open `index.html` in your browser:**
-    Simply open the `index.html` file using a modern web browser like Chrome or Firefox. No server is required to run this project.
+
+3.  **Deploy the Project**
+    From the root directory of the project, run the deployment command:
+    ```bash
+    firebase deploy --only hosting
+    ```
+    This will deploy the application to your Firebase Hosting URL.
 
 ---
 
