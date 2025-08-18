@@ -102,7 +102,6 @@ function renderTable(rows) {
 
     // Type
     const tdType = document.createElement("td");
-    // Prefer r.category if present, else infer from amount
     tdType.textContent = r.category || (Number(r.amount) >= 0 ? "Income" : "Expense");
     tr.appendChild(tdType);
 
@@ -122,15 +121,25 @@ function renderTable(rows) {
     tdDate.textContent = d.toLocaleDateString("en-IN");
     tr.appendChild(tdDate);
 
-    // Delete
-    const tdDel = document.createElement("td");
-    const del = document.createElement("i");
-    del.className = "fas fa-trash-alt delete-icon";
-    del.style.cursor = "pointer";
-    del.title = "Delete";
-    del.addEventListener("click", () => handleDelete(r.id));
-    tdDel.appendChild(del);
-    tr.appendChild(tdDel);
+    // Actions (Edit & Delete)
+    const tdActions = document.createElement("td");
+    tdActions.className = "text-center";
+
+    // Create the edit icon element and append it
+    const editIcon = document.createElement("i");
+    editIcon.className = "fas fa-edit edit-icon me-3";
+    editIcon.title = "Edit";
+    editIcon.addEventListener("click", () => console.log(`Edit clicked for ID: ${r.id}`));
+    tdActions.appendChild(editIcon);
+
+    // Create the delete icon element and append it
+    const deleteIcon = document.createElement("i");
+    deleteIcon.className = "fas fa-trash-alt delete-icon";
+    deleteIcon.title = "Delete";
+    deleteIcon.addEventListener("click", () => handleDelete(r.id));
+    tdActions.appendChild(deleteIcon);
+
+    tr.appendChild(tdActions);
 
     tbody.appendChild(tr);
   }
@@ -144,6 +153,24 @@ function renderTotals(rows) {
   if (incomeEl)  incomeEl.textContent  = fmtINR(income);
   if (expenseEl) expenseEl.textContent = fmtINR(Math.abs(expense));
   if (netEl)     netEl.textContent     = fmtINR(net);
+}
+
+// ---------- NEW EDIT FUNCTION ----------
+function handleEdit(row) {
+    editingId = row.id;
+    selType.value = row.category;
+    inputAmount.value = Math.abs(Number(row.amount));
+    inputInfo.value = row.note || row.info;
+    
+    // Format the date for the input field (yyyy-mm-dd)
+    const d = row.date?.toDate ? row.date.toDate() : new Date(row.date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    inputDate.value = `${yyyy}-${mm}-${dd}`;
+
+    formBtn.textContent = "Update";
+    inputAmount.focus();
 }
 
 async function handleDelete(id) {

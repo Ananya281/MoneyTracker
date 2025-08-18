@@ -1,215 +1,86 @@
-/* ================= Global Styles ================= */
+/* Custom Styles for Money Tracker Dashboard */
+
 body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  background: #f8f9fa;
-  color: #333;
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5;
 }
 
-h1, h2 {
-  margin: 0 0 10px;
-}
-
-button {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #007bff;
-  color: white;
-  font-size: 1rem;
-}
-
-button.secondary {
-  background: #f4f4f4;
-  border: 1px solid #ccc;
-  color: #333;
-}
-
-.hidden {
-  display: none;
-}
-
-/* ================= Landing Page ================= */
-.center-box {
-  max-width: 400px;
-  margin: 100px auto;
-  padding: 30px;
-  text-align: center;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
-}
-
-.center-box h1 {
-  font-size: 2rem;
-}
-
-.btn-group {
-  margin-top: 20px;
-}
-
-.btn-group .btn {
-  display: inline-block;
-  padding: 10px 16px;
-  background: #007bff;
-  color: white;
-  border-radius: 5px;
-  text-decoration: none;
-  margin: 5px;
-}
-
-.btn-group .btn.secondary {
-  background: #f4f4f4;
-  border: 1px solid #ccc;
-  color: #333;
-}
-
-/* ================= Topbar ================= */
-.topbar {
-  background: #007bff;
-  color: white;
-  padding: 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.topbar h1 {
-  font-size: 1.5rem;
-}
-
-#user-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* ================= Cards & Layout ================= */
-.container {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 0 15px;
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
 }
 
 .card {
-  background: white;
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
+    border-radius: 1.25rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.08) !important;
 }
 
-/* ================= Forms ================= */
-.input-section label {
-  display: block;
-  margin-bottom: 8px;
+.form-control, .form-select {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-color: #e0e0e0;
 }
 
-.input-section input,
-.input-section select {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    border-color: #198754;
 }
 
-#add_btn {
-  margin-top: 10px;
-  background: #28a745;
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    font-weight: 600;
+    border-radius: 0.75rem;
 }
 
-#add_btn i {
-  margin-right: 5px;
+.btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
 }
 
-/* ================= Table ================= */
-.table-wrap {
-  overflow-x: auto;
+.badge {
+    font-weight: 600;
+    border-radius: 0.75rem;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.table {
+    --bs-table-bg: transparent;
 }
 
-table th, table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
+/* Fix for horizontal scrollbar */
+.table-responsive-sm {
+    overflow-x: auto;
 }
 
-table th {
-  background: #f1f1f1;
+/* Custom table alignment and icon styles */
+#expense-table-body td:nth-child(2) {
+    text-align: right;
+    font-weight: 600;
 }
 
+#expense-table-body td:nth-child(5) {
+    text-align: center;
+}
+
+.edit-icon, .delete-icon {
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+.edit-icon {
+    color: var(--bs-primary); /* This will make it Bootstrap blue */
+}
 .delete-icon {
-  color: red;
-  cursor: pointer;
+    color: var(--bs-danger); /* This will make it Bootstrap red */
 }
 
-/* ================= Totals ================= */
-.totals {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
+.edit-icon:hover, .delete-icon:hover {
+    transform: scale(1.1);
 }
 
-.totals .label {
-  font-weight: bold;
+.text-danger {
+    color: #dc3545 !important;
 }
-
-.totals .net {
-  font-size: 1.1rem;
-}
-
-/* ================= Auth Pages ================= */
-.auth-container {
-  max-width: 350px;
-  margin: 100px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  text-align: center;
-}
-
-.auth-container h2 {
-  margin-bottom: 20px;
-}
-
-.auth-container input,
-.auth-container button {
-  width: 100%;
-  margin: 8px 0;
-  padding: 10px;
-  font-size: 1rem;
-}
-
-.secondary {
-  background: #f4f4f4;
-  border: 1px solid #ccc;
-}
-
-.divider {
-  margin: 15px 0;
-  font-size: 0.85rem;
-  color: #888;
-}
-
-.google-btn {
-  background: #fff;
-  border: 1px solid #ccc;
-  color: #444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.google-btn img {
-  width: 20px;
-  height: 20px;
+.text-success {
+    color: #198754 !important;
 }
