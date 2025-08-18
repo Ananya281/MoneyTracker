@@ -1,9 +1,11 @@
-#💰 Money Tracker
+# 💰 Money Tracker
 
-Track your expenses and income with a clean, modern, and responsive interface.  
-Stay in control of your finances anywhere, anytime.
+Track your expenses and income with a clean, modern, and responsive interface. Stay in control of your finances anywhere, anytime.
+
+---
 
 ## 🚀 Live Demo
+
 [Click here to view the live app](https://money-tracker-daea2.web.app)
 
 ---
@@ -12,7 +14,6 @@ Stay in control of your finances anywhere, anytime.
 
 - 📊 **Dashboard** with income & expense overview
 - ➕ Add, edit, and delete transactions
-- 🔍 Search & filter transactions
 - 📱 Fully responsive design
 - 🔑 Authentication with Email/Password & Google Sign-In
 - ☁ Hosted on Firebase for fast, secure access
