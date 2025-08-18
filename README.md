@@ -47,7 +47,7 @@ This project is deployed using Firebase Hosting. To run and deploy it, follow th
 1.  **Clone the Repository**
     Open your terminal or command prompt and clone the project:
     ```bash
-    git clone [https://github.com/Ananya281/MoneyTracker.git](https://github.com/Ananya281/MoneyTracker.git)
+    git clone https://github.com/Ananya281/MoneyTracker.git
     ```
 
 2.  **Login to Firebase**
