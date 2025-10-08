@@ -1,5 +1,7 @@
 // auth.js — login + signup (uses the shared app from db.js)
 import { auth, db } from "./db.js?v=2";
+
+//import auth and firestore methods
 import {
   setPersistence,
   browserLocalPersistence,
@@ -16,9 +18,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const provider = new GoogleAuthProvider();
+//initialize Google auth provider that is Google sign in
+//so that user can log in with their Google account
 
-// ---------- tiny helpers ----------
+
+//helper functions
 const $ = (sel) => document.querySelector(sel);
+//select html elements without repeating document.querySelector
+
+//display errors
 function showError(targetForm, msg) {
   if (!targetForm) return alert(msg);
   let el = targetForm.querySelector(".auth-error");
@@ -32,13 +40,18 @@ function showError(targetForm, msg) {
   }
   el.textContent = (msg || "").replace("Firebase:", "").trim();
 }
+
+//improve ux, prevent duplicate submissions
 function setLoading(btn, loading) {
   if (!btn) return;
   btn.disabled = loading;
   btn.style.opacity = loading ? "0.7" : "1";
 }
 
-// ---------- users/{uid} profile doc (email, name, timestamps) ----------
+
+//authenticated user has doc (email, name, createdAt, updatedAt)
+//under users/uid
+//users personal data
 async function ensureUserDoc(user, name) {
   if (!user) return;
 
@@ -48,7 +61,7 @@ async function ensureUserDoc(user, name) {
   // Always update these:
   const payload = {
     email: user.email ?? null,
-    name:  name || user.displayName || null,   // matches your schema
+    name:  name || user.displayName || null,   // matches our schema
     updatedAt: serverTimestamp()
   };
 
@@ -132,12 +145,11 @@ if (signupForm) {
   });
 }
 
-// ---------- Auth redirect guard ----------
 // ---------- Auth redirect + ensure profile ----------
+//triggers whenever login state changes (login.logout)
 onAuthStateChanged(auth, async (user) => {
   try {
     if (user) {
-      // safety net: guarantees users/{uid} exists & updates updatedAt
       await ensureUserDoc(user);
     }
   } catch (e) {
@@ -147,7 +159,12 @@ onAuthStateChanged(auth, async (user) => {
   const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const isAuthPage = page === "login.html" || page === "signup.html";
   if (user && isAuthPage) window.location.replace("index.html");
-  // If you also want to protect the dashboard:
-  // if (!user && page === "index.html") window.location.replace("login.html");
 });
 
+
+
+//connects Firebase Authentication with frontend login nad signup forms
+// handles both email-password and Google sign-in methods.
+// After successful authentication, it stores basic user info in Firestore using ensureUserDoc().
+// onAuthStateChanged auth state listener redirecting logged in users to dashboard and block unauthenticated access
+//improves ux through loading states and error displays
